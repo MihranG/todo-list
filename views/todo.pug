@@ -1,0 +1,25 @@
+head
+    title my TODO list
+body 
+    if errors
+        for err in errors
+            p=err.msg
+    
+    if todos
+        ul
+            li
+                for todo in todos
+                    p=todo.action
+                        div
+                            a(href=`edit/${todo.id}`) EDIT    
+                            a(href=`del/${todo.id}`)   DELETE
+                
+    form(method="post", action = "/")
+        div
+            label(for="action") action
+                input(type="text" name="action" id="action")
+                br
+        div
+            button add
+    
+    

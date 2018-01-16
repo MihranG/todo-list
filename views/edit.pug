@@ -1,0 +1,12 @@
+head
+    title edit todo item
+body 
+    
+                  
+    form(method="post", action = `/edit/${todo.id}`)
+        div
+            label(for="action") action
+                input(type="text" name="action" id="action" value=`${todo.action}`)
+                br
+        div
+            button edit
