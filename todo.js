@@ -3,6 +3,129 @@ const cookieParser = require('cookie-parser');
 const path = require ('path');
 const bodyParser = require('body-parser');
 const expressValidator = require('express-validator');
+const MongoClient = require('mongodb').MongoClient;
+const url =  "mongodb://localhost:27017/tododb"
+
+
+var mongoose = require('mongoose');
+
+
+
+function connectToDB(ext){
+
+    
+
+}
+
+function addToDB(newTodo){
+
+    
+    MongoClient.connect(url, (err,db)=>{
+
+        if (err) throw err;
+        console.log(" inside dateBaseDatabase !");
+        
+        let dbo = db.db("tododb");
+        
+        
+     
+    
+    
+    //dbo = db.db("tododb");
+    query = {
+        
+            
+            action : newTodo
+        
+    }
+    dbo.collection("todos").insert(query, function(err, res){
+        if (err) throw err;
+        console.log("Number of todos inserted: ");
+
+      })
+    db.close();
+    })
+}
+
+
+function deleteFromDB(deletableTodo){
+
+    MongoClient.connect(url, (err,db)=>{
+
+        if (err) throw err;
+        console.log(" inside dateBaseDelete!");    
+        
+        const query = {action : deletableTodo};
+        const dbo = db.db("tododb");
+        dbo.collection("todos").deleteOne(query, function(err, obj) {
+            if (err) throw err;
+            console.log("1 document deleted");
+        
+        });
+    
+
+        db.close();
+    })
+}
+
+function editFromDB(editableTodo,editableAction){
+    MongoClient.connect(url, (err,db)=>{
+
+        if (err) throw err;
+        console.log(" inside dateBaseEdit!");
+        
+    
+        
+        const dbo = db.db("tododb");
+        const query = {action : editableAction};
+        const newValues = {action: editableTodo}
+        
+        dbo.collection("todos").updateOne(query, {$set: newValues}, function(err, obj) {
+            if (err) throw err;
+            console.log("query is "+ query.action);
+           
+        });
+        db.close();
+    })
+        
+}
+
+
+function getFromDB(){
+    MongoClient.connect(url, (err,db)=>{
+
+        if (err) throw err;
+        console.log(" inside dateBaseEdit!");
+        
+    
+        
+        const dbo = db.db("tododb");
+        dbo.collection("todos").find({}).toArray(function(err, result) {
+            if (err) throw err;
+            console.log(result);
+            return result;
+        
+        });
+        db.close();
+    })
+        
+}
+
+
+
+
+
+
+
+/**
+ * 
+ *------------------------------------end of datebase----------------------------
+ */
+
+
+
+
+
 
 const app = express();
 
@@ -10,6 +133,10 @@ let todos = [{
     id:0,
     action: 'test action'
 }];
+
+
+
+
 let todosId = todos.length;
 
  
@@ -35,7 +162,11 @@ app.get ('/',(req,res)=>{
 app.get ('/api/todos', (req,res)=>{
 
     console.log('api/todos API ');
+
+
+    
     res.send({todos});
+    //res.send({getFromDB();});
 
 
 })
@@ -59,6 +190,8 @@ app.post('/', (req,res)=>{
             'id' : id, 
             'action' : action,
         }); 
+
+        addToDB(action);
 
         todosId++;
 
@@ -121,18 +254,27 @@ app.put('/api/edit', (req,res)=>{
 
         const editableTodo = req.body.id;
         console.log("EDITABLE"+editableTodo);
+
+        const editabletodoAction = req.body.action;
+
+
+        
         
         
 
-
+        let oldValue = req.body.oldVal;
         for (let i = 0; i<todos.length; i++){
             if(todos[i].id==editableTodo){
                 console.log("ird is "+ i);
+                
                 todos[i].action = req.body.action;
                 console.log(todos[i]);
             }
     
         }
+
+        editFromDB(editabletodoAction,oldValue);
+
         res.send("editable todo was ");
 
         //console.log(todos.editableTodo.action)
@@ -156,13 +298,18 @@ app.delete('/api/del', (req,res)=>{
 
     const deletableTodo = Number(req.body.id);
 
+    const deletabletodoAction = req.body.action;
+
 
     console.log("deletabletodo is "+deletableTodo);
+
+    deleteFromDB(deletabletodoAction);
     for (let i = 0; i<todos.length; i++){
         if(todos[i].id==deletableTodo){
             console.log(i);
 
             todos.splice(i , 1);
+
         }
 
     }
