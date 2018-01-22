@@ -1,0 +1,132 @@
+<head>
+    <style>
+
+        #myEdit{
+
+            display: none;    
+            
+                }
+    </style>
+
+</head>
+
+
+
+
+<body>
+    <div>
+        hello world
+    </div>
+
+    <form method="post", action = "/" id = "myForm">
+        <label for="action" > action </label>
+        <input type="text" name="action" id="action">
+        <br>
+        <button id="button"> Add </button>
+        <button id="myEdit"  > EDIT </button>
+    </form>
+
+        <div  id = "fetch" class = "float:left">
+        
+    </div>
+</body>
+<script> 
+
+    const ul = document.createElement('ul');
+    const myDiv = document.getElementById('fetch');
+    const url = '/api/todos';
+
+    function getData() {
+        return fetch(url)
+        .then((res) => res.json())
+        .catch(console.error);
+    }
+
+
+    function renderContent(data) {
+        //getting from Datebase
+        //getFromDB()
+        ul.innerHTML = '';
+        console.log(data);
+        data.todos.forEach(item => {
+            const li = document.createElement('li');
+            const edit = document.createElement('button');
+            const del = document.createElement('button');
+            const field=document.getElementById('action');
+            edit.setAttribute("type",`button`)
+            edit.innerText = " Edit ";
+            del.setAttribute("type",'button')
+            del.innerText = " Delete ";
+            
+            let oldVal = item.action;
+            edit.onclick = () => {
+                
+                field.setAttribute('value', item.action);
+                const myEdit = document.getElementById('myEdit');
+                myEdit.style.display = "block" ;
+                myEdit.addEventListener("click", function(event){
+                            event.preventDefault()
+                });
+                
+                myEdit.onclick=()=>{
+                    
+                    console.log("item is "+JSON.stringify(item));
+                    fetch('api/edit',{
+                        
+                        method: 'put',
+                        body: JSON.stringify({ id: item.id, action: field.value,oldVal : oldVal }),
+                        headers: new Headers({
+                        'Content-Type': 'application/json'})
+                    }).catch(error => console.error('Error:', error))
+                        .then(response => getData())
+                        .then(renderContent);
+
+            
+
+                }
+               
+                
+               
+
+                
+                   
+                
+
+            };
+
+
+           
+
+            del.onclick = () => {
+                
+                
+                fetch('api/del',{
+                    
+                    method: 'delete',
+                    body: JSON.stringify(item),
+                    
+                    headers: new Headers({
+                    'Content-Type': 'application/json'})
+                })
+                    .then(res => res.json())
+                    .catch(error => console.error('Error:', error))
+                    .then(response => getData())
+                    .then(renderContent);
+            
+
+
+            };
+
+
+            li.innerText = item.action;
+            ul.appendChild(li);
+            li.appendChild(edit);
+            li.appendChild(del)
+        });
+
+        
+    }
+
+    myDiv.appendChild(ul);
+    getData().then(renderContent);
+</script>
